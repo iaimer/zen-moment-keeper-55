@@ -9,9 +9,6 @@ interface Props {
   onSave: (updater: (prev: DayData) => DayData) => void;
 }
 
-const QUICK_ADD = {
-  water: [250, 500],
-};
 
 export default function HabitTracker({ data, onSave }: Props) {
   const [stepsInput, setStepsInput] = useState<string>('');
@@ -71,10 +68,8 @@ export default function HabitTracker({ data, onSave }: Props) {
         {data.habits.quantified.map((q) => {
           const isWater = q.id === 'water';
           const isSteps = q.id === 'steps';
-          const quickValues = QUICK_ADD[q.id as keyof typeof QUICK_ADD] ?? [];
           
           if (isSteps) {
-            // Steps: direct input mode
             return (
               <div key={q.id} className="space-y-2">
                 <div className="flex items-center gap-2">
@@ -108,44 +103,28 @@ export default function HabitTracker({ data, onSave }: Props) {
             );
           }
           
-          // Water: quick add buttons
           return (
-            <div key={q.id} className="space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  {isWater && <Droplets className="w-5 h-5 text-water" />}
-                  <span className="text-sm font-medium">{q.label}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => updateQuantified(q.id, -q.step)}
-                    className="w-8 h-8 rounded-full bg-muted flex items-center justify-center active:scale-90 transition-transform"
-                  >
-                    <Minus className="w-3.5 h-3.5 text-muted-foreground" />
-                  </button>
-                  <span className="text-sm font-bold w-20 text-center tabular-nums">
-                    {q.value.toLocaleString()}{q.unit}
-                  </span>
-                  <button
-                    onClick={() => updateQuantified(q.id, q.step)}
-                    className="w-8 h-8 rounded-full gradient-water flex items-center justify-center active:scale-90 transition-transform"
-                  >
-                    <Plus className="w-3.5 h-3.5 text-white" />
-                  </button>
-                </div>
+            <div key={q.id} className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {isWater && <Droplets className="w-5 h-5 text-water" />}
+                <span className="text-sm font-medium">{q.label}</span>
               </div>
-              
-              {/* Quick add buttons for water */}
-              <div className="flex gap-2 pl-7">
-                {quickValues.map((val) => (
-                  <button
-                    key={val}
-                    onClick={() => updateQuantified(q.id, val)}
-                    className="px-3 py-1 rounded-full text-xs font-medium transition-all active:scale-95 bg-water/15 text-water hover:bg-water/25"
-                  >
-                    +{val.toLocaleString()}{q.unit}
-                  </button>
-                ))}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => updateQuantified(q.id, -q.step)}
+                  className="w-8 h-8 rounded-full bg-muted flex items-center justify-center active:scale-90 transition-transform"
+                >
+                  <Minus className="w-3.5 h-3.5 text-muted-foreground" />
+                </button>
+                <span className="text-sm font-bold w-20 text-center tabular-nums">
+                  {q.value.toLocaleString()}{q.unit}
+                </span>
+                <button
+                  onClick={() => updateQuantified(q.id, q.step)}
+                  className="w-8 h-8 rounded-full gradient-water flex items-center justify-center active:scale-90 transition-transform"
+                >
+                  <Plus className="w-3.5 h-3.5 text-white" />
+                </button>
               </div>
             </div>
           );
