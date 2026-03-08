@@ -75,8 +75,6 @@ export default function HabitTracker({ data, onSave }: Props) {
                 <div className="flex items-center gap-2">
                   <Footprints className="w-5 h-5 text-steps" />
                   <span className="text-sm font-medium">{q.label}</span>
-                </div>
-                <div className="flex items-center gap-2 pl-7">
                   <Input
                     type="number"
                     placeholder="输入步数"
