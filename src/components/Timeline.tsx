@@ -63,7 +63,7 @@ export default function Timeline({ data, onSave }: Props) {
   return (
     <div className="rounded-2xl bg-card p-4 shadow-sm border border-border animate-fade-in">
       <h2 className="text-sm font-semibold text-muted-foreground mb-3 tracking-wide flex items-center gap-2">
-        <span className="text-base">🕰️</span> 时间轴
+        ✍️ 随手记 & 灵感
       </h2>
 
       {data.timeline.length === 0 ? (

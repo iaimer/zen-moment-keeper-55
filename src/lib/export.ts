@@ -17,7 +17,7 @@ export function generateMarkdown(day: DayData): string {
   }
 
   lines.push('');
-  lines.push('## 🕰️ 时间轴');
+  lines.push('## ✍️ 随手记 & 灵感');
   lines.push('');
   for (const entry of day.timeline) {
     const time = format(new Date(entry.timestamp), 'HH:mm');
