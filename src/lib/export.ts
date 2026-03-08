@@ -1,5 +1,7 @@
 import { DayData } from '@/types/journal';
 import { format } from 'date-fns';
+import { getImage } from '@/lib/db';
+import JSZip from 'jszip';
 
 export function generateMarkdown(day: DayData): string {
   const lines: string[] = [];
@@ -20,9 +22,6 @@ export function generateMarkdown(day: DayData): string {
   for (const entry of day.timeline) {
     const time = format(new Date(entry.timestamp), 'HH:mm');
     lines.push(`- **${time}** ${entry.text}`);
-    if (entry.imageId) {
-      lines.push(`  ![[${entry.imageId}.jpg]]`);
-    }
   }
 
   lines.push('');
@@ -59,13 +58,38 @@ export function generateMarkdown(day: DayData): string {
   return lines.join('\n');
 }
 
-export function downloadMarkdown(day: DayData) {
-  const md = generateMarkdown(day);
-  const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
+export async function downloadMarkdown(day: DayData) {
+  const images = day.images ?? [];
+
+  if (images.length === 0) {
+    // No images, just download the markdown file
+    const md = generateMarkdown(day);
+    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${day.date}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+    return;
+  }
+
+  // Has images — bundle into a ZIP
+  const zip = new JSZip();
+  zip.file(`${day.date}.md`, generateMarkdown(day));
+
+  for (const imageId of images) {
+    const img = await getImage(imageId);
+    if (img) {
+      zip.file(`${imageId}.jpg`, img.blob);
+    }
+  }
+
+  const zipBlob = await zip.generateAsync({ type: 'blob' });
+  const url = URL.createObjectURL(zipBlob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `${day.date}.md`;
+  a.download = `${day.date}.zip`;
   a.click();
   URL.revokeObjectURL(url);
 }

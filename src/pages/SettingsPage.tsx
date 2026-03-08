@@ -54,10 +54,8 @@ export default function SettingsPage() {
       toast.error('该日期没有数据可导出');
       return;
     }
-    downloadMarkdown(dayData);
-    toast.success(`已导出 ${dateStr} 的记录`, {
-      description: '图片请手动从应用中保存至 Obsidian 附件目录',
-    });
+    await downloadMarkdown(dayData);
+    toast.success(`已导出 ${dateStr} 的记录`);
   };
 
   const exportAll = async () => {
@@ -66,10 +64,10 @@ export default function SettingsPage() {
       toast.error('没有数据可导出');
       return;
     }
-    days.forEach(downloadMarkdown);
-    toast.success(`已导出 ${days.length} 天的记录`, {
-      description: '图片请手动从应用中保存至 Obsidian 附件目录',
-    });
+    for (const day of days) {
+      await downloadMarkdown(day);
+    }
+    toast.success(`已导出 ${days.length} 天的记录`);
   };
 
   if (!settings) return null;
@@ -121,7 +119,7 @@ export default function SettingsPage() {
           Obsidian 导出
         </h2>
         <p className="text-xs text-muted-foreground mb-3">
-          导出日记为 Markdown 文件（YYYY-MM-DD.md），图片以 ![[filename]] 格式引用。
+          导出日记为 Markdown 文件，包含图片时自动打包为 ZIP。
         </p>
         
         {/* Single day export */}
