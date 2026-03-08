@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { Plus, Clock, Pencil, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { DayData, TimelineEntry } from '@/types/journal';
@@ -26,27 +26,95 @@ interface Props {
 }
 
 function TimelineItem({ entry, onEdit, onDelete }: { entry: TimelineEntry; onEdit: () => void; onDelete: () => void }) {
+  const [offsetX, setOffsetX] = useState(0);
+  const startX = useRef(0);
+  const startY = useRef(0);
+  const swiping = useRef(false);
+  const locked = useRef(false);
+
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    startX.current = e.touches[0].clientX;
+    startY.current = e.touches[0].clientY;
+    swiping.current = true;
+    locked.current = false;
+  }, []);
+
+  const onTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!swiping.current) return;
+    const dx = e.touches[0].clientX - startX.current;
+    const dy = e.touches[0].clientY - startY.current;
+
+    if (!locked.current) {
+      if (Math.abs(dy) > 8 && Math.abs(dy) > Math.abs(dx)) {
+        swiping.current = false;
+        setOffsetX(0);
+        return;
+      }
+      if (Math.abs(dx) > 8) {
+        locked.current = true;
+      }
+      return;
+    }
+
+    const clamped = Math.max(-120, Math.min(0, dx));
+    setOffsetX(clamped);
+  }, []);
+
+  const onTouchEnd = useCallback(() => {
+    swiping.current = false;
+    locked.current = false;
+    setOffsetX((prev) => (prev < -50 ? -120 : 0));
+  }, []);
+
+  const closeSwipe = () => setOffsetX(0);
+
   return (
-    <div className="flex gap-3 group">
-      <div className="flex flex-col items-center">
-        <div className="w-3 h-3 rounded-full bg-primary mt-1.5 ring-4 ring-primary/20" />
-        <div className="w-0.5 flex-1 bg-gradient-to-b from-primary/30 to-transparent" />
+    <div className="relative overflow-hidden rounded-xl mb-1">
+      {/* Action buttons behind */}
+      <div className="absolute inset-y-0 right-0 flex items-stretch">
+        <button
+          onClick={() => { closeSwipe(); onEdit(); }}
+          className="w-[60px] flex items-center justify-center bg-primary/90 text-primary-foreground active:bg-primary"
+        >
+          <Pencil className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => { closeSwipe(); onDelete(); }}
+          className="w-[60px] flex items-center justify-center bg-destructive text-destructive-foreground active:bg-destructive/80"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
       </div>
-      <div className="pb-4 flex-1">
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] text-muted-foreground font-medium tabular-nums bg-muted px-2 py-0.5 rounded-full">
-            {format(new Date(entry.timestamp), 'HH:mm')}
-          </span>
-          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button onClick={onEdit} className="p-1.5 rounded-lg hover:bg-muted active:scale-90 transition-all">
-              <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
-            </button>
-            <button onClick={onDelete} className="p-1.5 rounded-lg hover:bg-destructive/10 active:scale-90 transition-all">
-              <Trash2 className="w-3.5 h-3.5 text-destructive" />
-            </button>
-          </div>
+
+      {/* Foreground content */}
+      <div
+        className="flex gap-3 group relative bg-card z-10 transition-transform duration-200 ease-out"
+        style={{ transform: `translateX(${offsetX}px)` }}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
+        <div className="flex flex-col items-center">
+          <div className="w-3 h-3 rounded-full bg-primary mt-1.5 ring-4 ring-primary/20" />
+          <div className="w-0.5 flex-1 bg-gradient-to-b from-primary/30 to-transparent" />
         </div>
-        <p className="text-sm mt-1.5 leading-relaxed whitespace-pre-wrap">{entry.text}</p>
+        <div className="pb-4 flex-1">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] text-muted-foreground font-medium tabular-nums bg-muted px-2 py-0.5 rounded-full">
+              {format(new Date(entry.timestamp), 'HH:mm')}
+            </span>
+            {/* Desktop hover buttons */}
+            <div className="hidden sm:flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button onClick={onEdit} className="p-1.5 rounded-lg hover:bg-muted active:scale-90 transition-all">
+                <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+              </button>
+              <button onClick={onDelete} className="p-1.5 rounded-lg hover:bg-destructive/10 active:scale-90 transition-all">
+                <Trash2 className="w-3.5 h-3.5 text-destructive" />
+              </button>
+            </div>
+          </div>
+          <p className="text-sm mt-1.5 leading-relaxed whitespace-pre-wrap">{entry.text}</p>
+        </div>
       </div>
     </div>
   );
