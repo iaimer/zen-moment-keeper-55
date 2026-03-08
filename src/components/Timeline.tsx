@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Clock } from 'lucide-react';
+import { Plus, Clock, Pencil, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { DayData, TimelineEntry } from '@/types/journal';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,23 +9,43 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface Props {
   data: DayData;
   onSave: (updater: (prev: DayData) => DayData) => void;
 }
 
-function TimelineItem({ entry }: { entry: TimelineEntry }) {
+function TimelineItem({ entry, onEdit, onDelete }: { entry: TimelineEntry; onEdit: () => void; onDelete: () => void }) {
   return (
-    <div className="flex gap-3">
+    <div className="flex gap-3 group">
       <div className="flex flex-col items-center">
         <div className="w-3 h-3 rounded-full bg-primary mt-1.5 ring-4 ring-primary/20" />
         <div className="w-0.5 flex-1 bg-gradient-to-b from-primary/30 to-transparent" />
       </div>
       <div className="pb-4 flex-1">
-        <span className="text-[11px] text-muted-foreground font-medium tabular-nums bg-muted px-2 py-0.5 rounded-full">
-          {format(new Date(entry.timestamp), 'HH:mm')}
-        </span>
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] text-muted-foreground font-medium tabular-nums bg-muted px-2 py-0.5 rounded-full">
+            {format(new Date(entry.timestamp), 'HH:mm')}
+          </span>
+          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button onClick={onEdit} className="p-1.5 rounded-lg hover:bg-muted active:scale-90 transition-all">
+              <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+            </button>
+            <button onClick={onDelete} className="p-1.5 rounded-lg hover:bg-destructive/10 active:scale-90 transition-all">
+              <Trash2 className="w-3.5 h-3.5 text-destructive" />
+            </button>
+          </div>
+        </div>
         <p className="text-sm mt-1.5 leading-relaxed whitespace-pre-wrap">{entry.text}</p>
       </div>
     </div>
@@ -36,28 +56,62 @@ export default function Timeline({ data, onSave }: Props) {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState('');
   const [time, setTime] = useState(format(new Date(), 'HH:mm'));
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const addEntry = () => {
+  const openNew = () => {
+    setEditingId(null);
+    setText('');
+    setTime(format(new Date(), 'HH:mm'));
+    setOpen(true);
+  };
+
+  const openEdit = (entry: TimelineEntry) => {
+    setEditingId(entry.id);
+    setText(entry.text);
+    setTime(format(new Date(entry.timestamp), 'HH:mm'));
+    setOpen(true);
+  };
+
+  const handleSave = () => {
     if (!text.trim()) return;
-    
+
     const [hours, minutes] = time.split(':').map(Number);
     const timestamp = new Date();
     timestamp.setHours(hours, minutes, 0, 0);
-    
-    const entry: TimelineEntry = {
-      id: `t_${Date.now()}`,
-      timestamp: timestamp.toISOString(),
-      text: text.trim(),
-    };
+
+    if (editingId) {
+      onSave((prev) => ({
+        ...prev,
+        timeline: prev.timeline
+          .map((e) => e.id === editingId ? { ...e, text: text.trim(), timestamp: timestamp.toISOString() } : e)
+          .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()),
+      }));
+    } else {
+      const entry: TimelineEntry = {
+        id: `t_${Date.now()}`,
+        timestamp: timestamp.toISOString(),
+        text: text.trim(),
+      };
+      onSave((prev) => ({
+        ...prev,
+        timeline: [...prev.timeline, entry].sort(
+          (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+        ),
+      }));
+    }
+    setText('');
+    setEditingId(null);
+    setOpen(false);
+  };
+
+  const confirmDelete = () => {
+    if (!deleteId) return;
     onSave((prev) => ({
       ...prev,
-      timeline: [...prev.timeline, entry].sort(
-        (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-      ),
+      timeline: prev.timeline.filter((e) => e.id !== deleteId),
     }));
-    setText('');
-    setTime(format(new Date(), 'HH:mm'));
-    setOpen(false);
+    setDeleteId(null);
   };
 
   return (
@@ -68,37 +122,36 @@ export default function Timeline({ data, onSave }: Props) {
 
       {data.timeline.length === 0 ? (
         <div className="text-center py-6">
-          <p className="text-xs text-muted-foreground/70">
-            还没有记录 ✍️
-          </p>
-          <p className="text-xs text-muted-foreground/50 mt-1">
-            点击右下角按钮添加
-          </p>
+          <p className="text-xs text-muted-foreground/70">还没有记录 ✍️</p>
+          <p className="text-xs text-muted-foreground/50 mt-1">点击右下角按钮添加</p>
         </div>
       ) : (
         <div>
           {data.timeline.map((entry) => (
-            <TimelineItem key={entry.id} entry={entry} />
+            <TimelineItem
+              key={entry.id}
+              entry={entry}
+              onEdit={() => openEdit(entry)}
+              onDelete={() => setDeleteId(entry.id)}
+            />
           ))}
         </div>
       )}
 
       {/* FAB */}
       <button
-        onClick={() => {
-          setTime(format(new Date(), 'HH:mm'));
-          setOpen(true);
-        }}
+        onClick={openNew}
         className="fixed bottom-20 right-4 z-40 w-14 h-14 rounded-2xl gradient-highlight shadow-lg shadow-primary/30 flex items-center justify-center active:scale-90 transition-transform"
       >
         <Plus className="w-6 h-6 text-white" />
       </button>
 
+      {/* Add / Edit dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="rounded-2xl max-w-[90vw]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <span>✏️</span> 添加记录
+              <span>✏️</span> {editingId ? '编辑记录' : '添加记录'}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
@@ -110,8 +163,6 @@ export default function Timeline({ data, onSave }: Props) {
               rows={3}
               className="resize-none"
             />
-            
-            {/* Time picker */}
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-muted-foreground" />
               <input
@@ -122,17 +173,30 @@ export default function Timeline({ data, onSave }: Props) {
               />
               <span className="text-xs text-muted-foreground">可修改时间</span>
             </div>
-            
             <button
-              onClick={addEntry}
+              onClick={handleSave}
               disabled={!text.trim()}
               className="w-full py-3 rounded-xl gradient-highlight text-white font-semibold text-sm disabled:opacity-40 active:scale-[0.98] transition-transform"
             >
-              添加记录 🎉
+              {editingId ? '保存修改 ✅' : '添加记录 🎉'}
             </button>
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Delete confirmation */}
+      <AlertDialog open={!!deleteId} onOpenChange={(v) => !v && setDeleteId(null)}>
+        <AlertDialogContent className="rounded-2xl max-w-[85vw]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>确认删除？</AlertDialogTitle>
+            <AlertDialogDescription>删除后无法恢复，确定要删除这条记录吗？</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">删除</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
