@@ -7,8 +7,7 @@ export function generateMarkdown(day: DayData): string {
   const lines: string[] = [];
 
   // Header
-  const weekday = format(new Date(day.date), 'EEEE');
-  lines.push(`# 🌿 ${weekday} · 此时此刻`);
+  lines.push('# 🌿 {{date:dddd}} · 此时此刻');
   lines.push('> [!quote] 2026 年，如果只选一件事：**让健康和记录成为习惯。**');
   lines.push('');
   lines.push('---');
