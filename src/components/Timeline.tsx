@@ -1,8 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
-import { Plus, ImagePlus, Clock, Star } from 'lucide-react';
+import { useState } from 'react';
+import { Plus, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { DayData, TimelineEntry } from '@/types/journal';
-import { useImageStore } from '@/hooks/useImageStore';
 import { Input } from '@/components/ui/input';
 import {
   Dialog,
@@ -16,22 +15,7 @@ interface Props {
   onSave: (updater: (prev: DayData) => DayData) => void;
 }
 
-function TimelineItem({ 
-  entry, 
-  isFeatured,
-  onSetFeatured 
-}: { 
-  entry: TimelineEntry; 
-  isFeatured: boolean;
-  onSetFeatured: () => void;
-}) {
-  const [imgUrl, setImgUrl] = useState<string | null>(null);
-  const { load } = useImageStore();
-
-  useEffect(() => {
-    if (entry.imageId) load(entry.imageId).then(setImgUrl);
-  }, [entry.imageId, load]);
-
+function TimelineItem({ entry }: { entry: TimelineEntry }) {
   return (
     <div className="flex gap-3">
       <div className="flex flex-col items-center">
@@ -43,26 +27,6 @@ function TimelineItem({
           {format(new Date(entry.timestamp), 'HH:mm')}
         </span>
         <p className="text-sm mt-1.5 leading-relaxed">{entry.text}</p>
-        {imgUrl && (
-          <div className="relative mt-2">
-            <img
-              src={imgUrl}
-              alt=""
-              className="rounded-xl max-h-40 object-cover w-full"
-            />
-            <button
-              onClick={onSetFeatured}
-              className={`absolute top-2 right-2 p-1.5 rounded-full transition-all active:scale-90 ${
-                isFeatured 
-                  ? 'bg-secondary text-secondary-foreground' 
-                  : 'bg-black/40 text-white/80 hover:bg-black/60'
-              }`}
-              title="设为日历封面"
-            >
-              <Star className={`w-4 h-4 ${isFeatured ? 'fill-current' : ''}`} />
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -72,18 +36,10 @@ export default function Timeline({ data, onSave }: Props) {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState('');
   const [time, setTime] = useState(format(new Date(), 'HH:mm'));
-  const [file, setFile] = useState<File | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
-  const { store } = useImageStore();
 
-  const addEntry = async () => {
+  const addEntry = () => {
     if (!text.trim()) return;
-    let imageId: string | undefined;
-    if (file) {
-      imageId = await store(file, data.date);
-    }
     
-    // Build timestamp from selected time
     const [hours, minutes] = time.split(':').map(Number);
     const timestamp = new Date();
     timestamp.setHours(hours, minutes, 0, 0);
@@ -92,7 +48,6 @@ export default function Timeline({ data, onSave }: Props) {
       id: `t_${Date.now()}`,
       timestamp: timestamp.toISOString(),
       text: text.trim(),
-      imageId,
     };
     onSave((prev) => ({
       ...prev,
@@ -102,15 +57,7 @@ export default function Timeline({ data, onSave }: Props) {
     }));
     setText('');
     setTime(format(new Date(), 'HH:mm'));
-    setFile(null);
     setOpen(false);
-  };
-
-  const setFeaturedImage = (imageId: string) => {
-    onSave((prev) => ({
-      ...prev,
-      featuredImageId: prev.featuredImageId === imageId ? undefined : imageId,
-    }));
   };
 
   return (
@@ -131,12 +78,7 @@ export default function Timeline({ data, onSave }: Props) {
       ) : (
         <div>
           {data.timeline.map((entry) => (
-            <TimelineItem 
-              key={entry.id} 
-              entry={entry} 
-              isFeatured={data.featuredImageId === entry.imageId}
-              onSetFeatured={() => entry.imageId && setFeaturedImage(entry.imageId)}
-            />
+            <TimelineItem key={entry.id} entry={entry} />
           ))}
         </div>
       )}
@@ -177,27 +119,6 @@ export default function Timeline({ data, onSave }: Props) {
                 className="flex h-10 rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
               <span className="text-xs text-muted-foreground">可修改时间</span>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => fileRef.current?.click()}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium active:scale-95 transition-all ${
-                  file 
-                    ? 'bg-accent text-accent-foreground' 
-                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                }`}
-              >
-                <ImagePlus className="w-4 h-4" />
-                {file ? '已选择 ✓' : '添加图片'}
-              </button>
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-              />
             </div>
             
             <button

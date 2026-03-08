@@ -40,6 +40,7 @@ export function getDefaultDayData(date: string, settings?: AppSettings): DayData
     highlight: { text: '' },
     timeline: [],
     reflection: { awareness: '', tomorrow: '' },
+    images: [],
   };
 }
 
