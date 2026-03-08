@@ -6,8 +6,9 @@ import JSZip from 'jszip';
 export function generateMarkdown(day: DayData): string {
   const lines: string[] = [];
 
-  // Header
-  lines.push('# 🌿 {{date:dddd}} · 此时此刻');
+  const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+  const weekday = weekdays[new Date(day.date + 'T00:00:00').getDay()];
+  lines.push(`# 🌿 ${weekday} · 此时此刻`);
   lines.push('> [!quote] 2026 年，如果只选一件事：**让健康和记录成为习惯。**');
   lines.push('');
   lines.push('---');
