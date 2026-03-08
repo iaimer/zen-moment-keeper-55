@@ -73,34 +73,36 @@ export default function HabitTracker({ data, onSave }: Props) {
           if (isSteps) {
             const showInput = q.value === 0 || editingSteps;
             return (
-              <div key={q.id} className="flex items-center gap-2">
-                <Footprints className="w-5 h-5 text-steps" />
-                <span className="text-sm font-medium">{q.label}</span>
+              <div key={q.id} className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Footprints className="w-5 h-5 text-steps" />
+                  <span className="text-sm font-medium">{q.label}</span>
+                </div>
                 {showInput ? (
-                  <>
+                  <div className="flex items-center gap-2 w-[8.5rem]">
                     <Input
                       type="number"
-                      placeholder="输入步数"
+                      placeholder="步数"
                       value={stepsInput}
                       onChange={(e) => setStepsInput(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && handleStepsSubmit()}
-                      className="flex-1 h-9"
+                      className="flex-1 h-8 text-sm"
                       autoFocus={editingSteps}
                     />
                     <button
                       onClick={handleStepsSubmit}
-                      className="px-4 py-2 rounded-xl gradient-steps text-white text-sm font-medium active:scale-95 transition-transform"
+                      className="px-3 py-1.5 rounded-xl gradient-steps text-white text-xs font-medium active:scale-95 transition-transform shrink-0"
                     >
                       确认
                     </button>
-                  </>
+                  </div>
                 ) : (
                   <button
                     onClick={() => {
                       setStepsInput(String(q.value));
                       setEditingSteps(true);
                     }}
-                    className="ml-auto text-sm font-bold text-steps tabular-nums active:opacity-70 transition-opacity"
+                    className="text-sm font-bold text-steps tabular-nums active:opacity-70 transition-opacity w-[8.5rem] text-center"
                   >
                     {q.value.toLocaleString()}{q.unit}
                   </button>
