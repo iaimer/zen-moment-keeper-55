@@ -1,9 +1,9 @@
-import { BookOpen, Calendar, Settings } from 'lucide-react';
+import { BookOpen, Image, Settings } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 const tabs = [
   { path: '/', label: '今日', icon: BookOpen },
-  { path: '/calendar', label: '轨迹', icon: Calendar },
+  { path: '/calendar', label: '轨迹', icon: Image },
 ];
 
 export default function BottomNav() {
