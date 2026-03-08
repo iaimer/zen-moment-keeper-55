@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 const tabs = [
   { path: '/', label: '今日', icon: BookOpen },
-  { path: '/calendar', label: '日历', icon: Calendar },
+  { path: '/calendar', label: '轨迹', icon: Calendar },
 ];
 
 export default function BottomNav() {
