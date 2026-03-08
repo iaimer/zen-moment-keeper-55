@@ -51,7 +51,7 @@ export function generateMarkdown(day: DayData): string {
     lines.push('## 📷 影像记录');
     lines.push('');
     for (const imageId of images) {
-      lines.push(`![[${imageId}.jpg]]`);
+      lines.push(`![[assets/${imageId}.jpg]]`);
     }
   }
 
@@ -81,7 +81,7 @@ export async function downloadMarkdown(day: DayData) {
   for (const imageId of images) {
     const img = await getImage(imageId);
     if (img) {
-      zip.file(`${imageId}.jpg`, img.blob);
+      zip.file(`assets/${imageId}.jpg`, img.blob);
     }
   }
 
