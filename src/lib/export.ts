@@ -46,6 +46,17 @@ export function generateMarkdown(day: DayData): string {
     lines.push(day.reflection.tomorrow);
   }
 
+  // Images section
+  const images = day.timeline.filter((e) => e.imageId);
+  if (images.length > 0) {
+    lines.push('');
+    lines.push('## 📷 影像记录');
+    lines.push('');
+    for (const entry of images) {
+      lines.push(`![[${entry.imageId}.jpg]]`);
+    }
+  }
+
   return lines.join('\n');
 }
 
