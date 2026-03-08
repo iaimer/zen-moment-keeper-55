@@ -39,6 +39,7 @@ export interface DayData {
   highlight: DailyHighlight;
   timeline: TimelineEntry[];
   reflection: ReflectionData;
+  images: string[]; // Array of image IDs
   featuredImageId?: string; // User-selected image for calendar
 }
 
