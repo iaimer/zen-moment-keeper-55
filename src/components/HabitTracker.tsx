@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { Minus, Plus, Droplets, Footprints } from 'lucide-react';
 import { DayData } from '@/types/journal';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 
 interface Props {
   data: DayData;
@@ -9,10 +11,11 @@ interface Props {
 
 const QUICK_ADD = {
   water: [250, 500],
-  steps: [1000, 5000],
 };
 
 export default function HabitTracker({ data, onSave }: Props) {
+  const [stepsInput, setStepsInput] = useState<string>('');
+
   const updateQuantified = (id: string, delta: number) => {
     onSave((prev) => ({
       ...prev,
@@ -20,6 +23,18 @@ export default function HabitTracker({ data, onSave }: Props) {
         ...prev.habits,
         quantified: prev.habits.quantified.map((q) =>
           q.id === id ? { ...q, value: Math.max(0, q.value + delta) } : q
+        ),
+      },
+    }));
+  };
+
+  const setQuantifiedValue = (id: string, value: number) => {
+    onSave((prev) => ({
+      ...prev,
+      habits: {
+        ...prev.habits,
+        quantified: prev.habits.quantified.map((q) =>
+          q.id === id ? { ...q, value: Math.max(0, value) } : q
         ),
       },
     }));
@@ -37,6 +52,14 @@ export default function HabitTracker({ data, onSave }: Props) {
     }));
   };
 
+  const handleStepsSubmit = () => {
+    const value = parseInt(stepsInput, 10);
+    if (!isNaN(value) && value >= 0) {
+      setQuantifiedValue('steps', value);
+      setStepsInput('');
+    }
+  };
+
   return (
     <div className="rounded-2xl bg-card p-4 shadow-sm border border-border animate-fade-in">
       <h2 className="text-sm font-semibold text-muted-foreground mb-4 tracking-wide flex items-center gap-2">
@@ -50,12 +73,47 @@ export default function HabitTracker({ data, onSave }: Props) {
           const isSteps = q.id === 'steps';
           const quickValues = QUICK_ADD[q.id as keyof typeof QUICK_ADD] ?? [];
           
+          if (isSteps) {
+            // Steps: direct input mode
+            return (
+              <div key={q.id} className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Footprints className="w-5 h-5 text-steps" />
+                  <span className="text-sm font-medium">{q.label}</span>
+                </div>
+                <div className="flex items-center gap-2 pl-7">
+                  <Input
+                    type="number"
+                    placeholder="输入步数"
+                    value={stepsInput}
+                    onChange={(e) => setStepsInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleStepsSubmit()}
+                    className="flex-1 h-9"
+                  />
+                  <button
+                    onClick={handleStepsSubmit}
+                    className="px-4 py-2 rounded-xl gradient-steps text-white text-sm font-medium active:scale-95 transition-transform"
+                  >
+                    确认
+                  </button>
+                </div>
+                {q.value > 0 && (
+                  <div className="pl-7">
+                    <span className="text-sm font-bold text-steps tabular-nums">
+                      今日: {q.value.toLocaleString()}{q.unit}
+                    </span>
+                  </div>
+                )}
+              </div>
+            );
+          }
+          
+          // Water: quick add buttons
           return (
             <div key={q.id} className="space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   {isWater && <Droplets className="w-5 h-5 text-water" />}
-                  {isSteps && <Footprints className="w-5 h-5 text-steps" />}
                   <span className="text-sm font-medium">{q.label}</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -70,26 +128,20 @@ export default function HabitTracker({ data, onSave }: Props) {
                   </span>
                   <button
                     onClick={() => updateQuantified(q.id, q.step)}
-                    className={`w-8 h-8 rounded-full flex items-center justify-center active:scale-90 transition-transform ${
-                      isWater ? 'gradient-water' : isSteps ? 'gradient-steps' : 'bg-primary'
-                    }`}
+                    className="w-8 h-8 rounded-full gradient-water flex items-center justify-center active:scale-90 transition-transform"
                   >
                     <Plus className="w-3.5 h-3.5 text-white" />
                   </button>
                 </div>
               </div>
               
-              {/* Quick add buttons */}
+              {/* Quick add buttons for water */}
               <div className="flex gap-2 pl-7">
                 {quickValues.map((val) => (
                   <button
                     key={val}
                     onClick={() => updateQuantified(q.id, val)}
-                    className={`px-3 py-1 rounded-full text-xs font-medium transition-all active:scale-95 ${
-                      isWater 
-                        ? 'bg-water/15 text-water hover:bg-water/25' 
-                        : 'bg-steps/15 text-steps hover:bg-steps/25'
-                    }`}
+                    className="px-3 py-1 rounded-full text-xs font-medium transition-all active:scale-95 bg-water/15 text-water hover:bg-water/25"
                   >
                     +{val.toLocaleString()}{q.unit}
                   </button>
