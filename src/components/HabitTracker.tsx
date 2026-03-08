@@ -79,7 +79,7 @@ export default function HabitTracker({ data, onSave }: Props) {
                   <span className="text-sm font-medium">{q.label}</span>
                 </div>
                 {showInput ? (
-                  <div className="flex items-center gap-2 w-[8.5rem]">
+                  <div className="flex items-center gap-2 w-[10rem]">
                     <Input
                       type="number"
                       placeholder="步数"
@@ -102,7 +102,7 @@ export default function HabitTracker({ data, onSave }: Props) {
                       setStepsInput(String(q.value));
                       setEditingSteps(true);
                     }}
-                    className="text-sm font-bold text-steps tabular-nums active:opacity-70 transition-opacity w-[8.5rem] text-center"
+                    className="text-sm font-bold text-steps tabular-nums active:opacity-70 transition-opacity w-[10rem] text-center"
                   >
                     {q.value.toLocaleString()}{q.unit}
                   </button>
