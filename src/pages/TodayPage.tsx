@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { format, subDays, addDays } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight, Download } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import HabitTracker from '@/components/HabitTracker';
 import DailyHighlight from '@/components/DailyHighlight';
 import Timeline from '@/components/Timeline';
 import ReflectionSection from '@/components/ReflectionSection';
 import { useJournal } from '@/hooks/useJournal';
-import { downloadMarkdown } from '@/lib/export';
 
 export default function TodayPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -19,12 +18,6 @@ export default function TodayPage() {
   const goNext = () => setSelectedDate(addDays(selectedDate, 1));
 
   const isToday = format(new Date(), 'yyyy-MM-dd') === dateStr;
-
-  const handleExport = () => {
-    if (data) {
-      downloadMarkdown(data);
-    }
-  };
 
   if (loading || !data) {
     return (
@@ -63,13 +56,6 @@ export default function TodayPage() {
               <ChevronRight className="w-5 h-5 text-muted-foreground" />
             </button>
           </div>
-          <button
-            onClick={handleExport}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-accent text-accent-foreground text-xs font-medium active:scale-95 transition-transform"
-          >
-            <Download className="w-4 h-4" />
-            导出
-          </button>
         </div>
         <h1 className="text-2xl font-bold tracking-tight mt-3">
           {format(selectedDate, 'M月d日', { locale: zhCN })}
