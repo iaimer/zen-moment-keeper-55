@@ -81,8 +81,7 @@ export async function downloadMarkdown(day: DayData) {
   for (const imageId of images) {
     const img = await getImage(imageId);
     if (img) {
-      const compressed = await compressImage(img.blob);
-      zip.file(`assets/${imageId}.jpg`, compressed);
+      zip.file(`assets/${imageId}.jpg`, img.blob);
     }
   }
 
