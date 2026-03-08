@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Plus, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { DayData, TimelineEntry } from '@/types/journal';
-import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
   DialogContent,
@@ -26,7 +26,7 @@ function TimelineItem({ entry }: { entry: TimelineEntry }) {
         <span className="text-[11px] text-muted-foreground font-medium tabular-nums bg-muted px-2 py-0.5 rounded-full">
           {format(new Date(entry.timestamp), 'HH:mm')}
         </span>
-        <p className="text-sm mt-1.5 leading-relaxed">{entry.text}</p>
+        <p className="text-sm mt-1.5 leading-relaxed whitespace-pre-wrap">{entry.text}</p>
       </div>
     </div>
   );
@@ -102,11 +102,13 @@ export default function Timeline({ data, onSave }: Props) {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <Input
+            <Textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="发生了什么有趣的事？"
               autoFocus
+              rows={3}
+              className="resize-none"
             />
             
             {/* Time picker */}
