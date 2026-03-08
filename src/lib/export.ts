@@ -7,6 +7,8 @@ export function generateMarkdown(day: DayData): string {
   const lines: string[] = [];
 
   // Habits
+  lines.push('## 🎯 习惯追踪');
+  lines.push('');
   for (const q of day.habits.quantified) {
     const checked = q.value > 0 ? 'x' : ' ';
     lines.push(`- [${checked}] ${q.label}: ${q.value}${q.unit}`);
@@ -17,6 +19,8 @@ export function generateMarkdown(day: DayData): string {
   }
 
   lines.push('');
+  lines.push('---');
+  lines.push('');
   lines.push('## ✍️ 随手记 & 灵感');
   lines.push('');
   for (const entry of day.timeline) {
@@ -25,6 +29,8 @@ export function generateMarkdown(day: DayData): string {
   }
 
   lines.push('');
+  lines.push('---');
+  lines.push('');
   lines.push('## ✨ 每日小确幸');
   lines.push('');
   if (day.highlight.text) {
@@ -32,12 +38,16 @@ export function generateMarkdown(day: DayData): string {
   }
 
   lines.push('');
+  lines.push('---');
+  lines.push('');
   lines.push('## 🧠 觉察与反思');
   lines.push('');
   if (day.reflection.awareness) {
     lines.push(day.reflection.awareness);
   }
 
+  lines.push('');
+  lines.push('---');
   lines.push('');
   lines.push('## 📝 明日寄语');
   lines.push('');
@@ -47,6 +57,8 @@ export function generateMarkdown(day: DayData): string {
 
   const images = day.images ?? [];
   if (images.length > 0) {
+    lines.push('');
+    lines.push('---');
     lines.push('');
     lines.push('## 📷 影像记录');
     lines.push('');
