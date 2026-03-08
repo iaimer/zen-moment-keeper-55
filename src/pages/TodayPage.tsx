@@ -6,6 +6,7 @@ import HabitTracker from '@/components/HabitTracker';
 import DailyHighlight from '@/components/DailyHighlight';
 import Timeline from '@/components/Timeline';
 import ReflectionSection from '@/components/ReflectionSection';
+import ImageGallery from '@/components/ImageGallery';
 import { useJournal } from '@/hooks/useJournal';
 
 export default function TodayPage() {
@@ -70,6 +71,7 @@ export default function TodayPage() {
       <DailyHighlight data={data} onSave={save} />
       <Timeline data={data} onSave={save} />
       <ReflectionSection data={data} onSave={save} />
+      <ImageGallery data={data} onSave={save} />
 
       {/* Bottom spacing for nav */}
       <div className="h-20" />
