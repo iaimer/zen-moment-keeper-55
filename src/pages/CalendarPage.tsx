@@ -7,7 +7,6 @@ import {
   getDay,
   addMonths,
   subMonths,
-  isSameMonth,
   isToday,
 } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
@@ -48,10 +47,19 @@ export default function CalendarPage() {
         const key = format(date, 'yyyy-MM-dd');
         const data = dayMap.get(key);
         let imageUrl: string | undefined;
-        if (data?.highlight?.imageId) {
-          const url = await load(data.highlight.imageId);
+        
+        // Use featured image if set, otherwise use first timeline image
+        if (data?.featuredImageId) {
+          const url = await load(data.featuredImageId);
           if (url) imageUrl = url;
+        } else if (data?.timeline) {
+          const firstWithImage = data.timeline.find(t => t.imageId);
+          if (firstWithImage?.imageId) {
+            const url = await load(firstWithImage.imageId);
+            if (url) imageUrl = url;
+          }
         }
+        
         results.push({ date, data, imageUrl });
       }
 
@@ -69,7 +77,7 @@ export default function CalendarPage() {
       <div className="flex items-center justify-between py-3">
         <button
           onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-          className="p-2 rounded-xl active:scale-90 transition-transform"
+          className="p-2 rounded-xl bg-muted active:scale-90 transition-transform"
         >
           <ChevronLeft className="w-5 h-5 text-muted-foreground" />
         </button>
@@ -78,23 +86,28 @@ export default function CalendarPage() {
         </h1>
         <button
           onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-          className="p-2 rounded-xl active:scale-90 transition-transform"
+          className="p-2 rounded-xl bg-muted active:scale-90 transition-transform"
         >
           <ChevronRight className="w-5 h-5 text-muted-foreground" />
         </button>
       </div>
 
       {/* Weekday headers */}
-      <div className="grid grid-cols-7 gap-1 mb-1">
-        {weekdays.map((d) => (
-          <div key={d} className="text-center text-[11px] text-muted-foreground font-medium py-1">
+      <div className="grid grid-cols-7 gap-1.5 mb-2">
+        {weekdays.map((d, i) => (
+          <div 
+            key={d} 
+            className={`text-center text-[11px] font-semibold py-1 ${
+              i === 0 || i === 6 ? 'text-primary' : 'text-muted-foreground'
+            }`}
+          >
             {d}
           </div>
         ))}
       </div>
 
       {/* Day grid */}
-      <div className="grid grid-cols-7 gap-1">
+      <div className="grid grid-cols-7 gap-1.5">
         {/* Empty cells for offset */}
         {Array.from({ length: startDay }).map((_, i) => (
           <div key={`empty-${i}`} className="aspect-square" />
@@ -103,26 +116,39 @@ export default function CalendarPage() {
         {cells.map((cell) => {
           const today = isToday(cell.date);
           const hasHighlight = !!cell.data?.highlight?.text;
+          const hasImage = !!cell.imageUrl;
 
           return (
             <button
               key={cell.date.toISOString()}
-              onClick={() => hasHighlight ? setSelected(cell) : null}
+              onClick={() => (hasHighlight || hasImage) ? setSelected(cell) : null}
               className={`aspect-square rounded-xl relative overflow-hidden flex items-end justify-center p-0.5 transition-all active:scale-90 ${
-                today ? 'ring-2 ring-primary' : ''
-              } ${hasHighlight ? 'cursor-pointer' : 'cursor-default'}`}
+                today ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''
+              } ${hasHighlight || hasImage ? 'cursor-pointer shadow-sm' : 'cursor-default'}`}
             >
-              {cell.imageUrl ? (
+              {hasImage ? (
                 <div
                   className="absolute inset-0 bg-cover bg-center"
                   style={{ backgroundImage: `url(${cell.imageUrl})` }}
                 />
               ) : (
-                <div className={`absolute inset-0 ${hasHighlight ? 'bg-primary/10' : 'bg-secondary/50'}`} />
+                <div className={`absolute inset-0 ${
+                  hasHighlight 
+                    ? 'gradient-highlight opacity-80' 
+                    : today 
+                      ? 'bg-primary/10' 
+                      : 'bg-muted/50'
+                }`} />
               )}
               <span
-                className={`relative text-[11px] font-semibold z-10 ${
-                  cell.imageUrl ? 'text-white drop-shadow-md' : today ? 'text-primary' : 'text-foreground'
+                className={`relative text-[11px] font-bold z-10 px-1 rounded ${
+                  hasImage 
+                    ? 'text-white drop-shadow-md bg-black/20' 
+                    : hasHighlight 
+                      ? 'text-white' 
+                      : today 
+                        ? 'text-primary' 
+                        : 'text-foreground'
                 }`}
               >
                 {format(cell.date, 'd')}
@@ -150,11 +176,13 @@ export default function CalendarPage() {
                     className="w-full rounded-xl max-h-48 object-cover"
                   />
                 )}
-                <div className="gradient-highlight rounded-xl p-4">
-                  <p className="text-base font-display font-bold text-primary-foreground">
-                    ✨ {selected.data?.highlight?.text}
-                  </p>
-                </div>
+                {selected.data?.highlight?.text && (
+                  <div className="gradient-highlight rounded-xl p-4">
+                    <p className="text-base font-display font-bold text-white">
+                      ✨ {selected.data.highlight.text}
+                    </p>
+                  </div>
+                )}
               </div>
             </>
           )}

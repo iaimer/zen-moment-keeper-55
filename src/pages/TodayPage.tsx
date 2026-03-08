@@ -12,7 +12,7 @@ export default function TodayPage() {
   if (loading || !data) {
     return (
       <div className="flex items-center justify-center h-[60vh]">
-        <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -20,9 +20,12 @@ export default function TodayPage() {
   return (
     <div className="px-4 pt-2 pb-4 space-y-4 max-w-md mx-auto">
       {/* Date header */}
-      <div className="pt-2">
-        <h1 className="text-2xl font-bold">
-          {format(new Date(data.date), 'M月d日 EEEE', { locale: zhCN })}
+      <div className="pt-2 pb-1">
+        <h1 className="text-2xl font-bold tracking-tight">
+          {format(new Date(data.date), 'M月d日', { locale: zhCN })}
+          <span className="text-primary ml-2">
+            {format(new Date(data.date), 'EEEE', { locale: zhCN })}
+          </span>
         </h1>
         <p className="text-xs text-muted-foreground mt-0.5">{data.date}</p>
       </div>
@@ -33,7 +36,7 @@ export default function TodayPage() {
       <ReflectionSection data={data} onSave={save} />
 
       {/* Bottom spacing for nav */}
-      <div className="h-16" />
+      <div className="h-20" />
     </div>
   );
 }

@@ -30,9 +30,6 @@ export function generateMarkdown(day: DayData): string {
   lines.push('');
   if (day.highlight.text) {
     lines.push(day.highlight.text);
-    if (day.highlight.imageId) {
-      lines.push(`![[${day.highlight.imageId}.jpg]]`);
-    }
   }
 
   lines.push('');
