@@ -164,7 +164,7 @@ export default function HabitTracker({ data, onSave }: Props) {
               onCheckedChange={() => toggleCheckbox(c.id)}
               className="data-[state=checked]:bg-accent data-[state=checked]:border-accent"
             />
-            <span className={`text-sm ${c.checked ? 'line-through text-muted-foreground' : ''}`}>
+            <span className={`text-sm ${c.checked ? 'text-muted-foreground' : ''}`}>
               {c.label}
             </span>
           </label>
