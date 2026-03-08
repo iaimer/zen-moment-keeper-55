@@ -12,7 +12,7 @@ interface Props {
 
 export default function HabitTracker({ data, onSave }: Props) {
   const [stepsInput, setStepsInput] = useState<string>('');
-
+  const [editingSteps, setEditingSteps] = useState(false);
   const updateQuantified = (id: string, delta: number) => {
     onSave((prev) => ({
       ...prev,
@@ -54,6 +54,7 @@ export default function HabitTracker({ data, onSave }: Props) {
     if (!isNaN(value) && value >= 0) {
       setQuantifiedValue('steps', value);
       setStepsInput('');
+      setEditingSteps(false);
     }
   };
 
@@ -70,35 +71,43 @@ export default function HabitTracker({ data, onSave }: Props) {
           const isSteps = q.id === 'steps';
           
           if (isSteps) {
+            const showInput = q.value === 0 || editingSteps;
             return (
-              <div key={q.id} className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Footprints className="w-5 h-5 text-steps" />
-                  <span className="text-sm font-medium">{q.label}</span>
-                  <Input
-                    type="number"
-                    placeholder="输入步数"
-                    value={stepsInput}
-                    onChange={(e) => setStepsInput(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleStepsSubmit()}
-                    className="flex-1 h-9"
-                  />
+              <div key={q.id} className="flex items-center gap-2">
+                <Footprints className="w-5 h-5 text-steps" />
+                <span className="text-sm font-medium">{q.label}</span>
+                {showInput ? (
+                  <>
+                    <Input
+                      type="number"
+                      placeholder="输入步数"
+                      value={stepsInput}
+                      onChange={(e) => setStepsInput(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleStepsSubmit()}
+                      className="flex-1 h-9"
+                      autoFocus={editingSteps}
+                    />
+                    <button
+                      onClick={handleStepsSubmit}
+                      className="px-4 py-2 rounded-xl gradient-steps text-white text-sm font-medium active:scale-95 transition-transform"
+                    >
+                      确认
+                    </button>
+                  </>
+                ) : (
                   <button
-                    onClick={handleStepsSubmit}
-                    className="px-4 py-2 rounded-xl gradient-steps text-white text-sm font-medium active:scale-95 transition-transform"
+                    onClick={() => {
+                      setStepsInput(String(q.value));
+                      setEditingSteps(true);
+                    }}
+                    className="ml-auto text-sm font-bold text-steps tabular-nums active:opacity-70 transition-opacity"
                   >
-                    确认
+                    {q.value.toLocaleString()}{q.unit}
                   </button>
-                </div>
-                {q.value > 0 && (
-                  <div className="pl-7">
-                    <span className="text-sm font-bold text-steps tabular-nums">
-                      今日: {q.value.toLocaleString()}{q.unit}
-                    </span>
-                  </div>
                 )}
               </div>
             );
+          }
           }
           
           return (
