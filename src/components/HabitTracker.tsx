@@ -108,7 +108,6 @@ export default function HabitTracker({ data, onSave }: Props) {
               </div>
             );
           }
-          }
           
           return (
             <div key={q.id} className="flex items-center justify-between">
