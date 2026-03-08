@@ -1,16 +1,20 @@
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, Download, ArrowLeft } from 'lucide-react';
+import { format } from 'date-fns';
+import { Plus, Trash2, Download, ArrowLeft, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { getSettings, saveSettings, getAllDays } from '@/lib/db';
+import { getSettings, saveSettings, getAllDays, getDayData } from '@/lib/db';
 import { downloadMarkdown } from '@/lib/export';
 import { AppSettings } from '@/types/journal';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 
 export default function SettingsPage() {
   const navigate = useNavigate();
   const [settings, setSettings] = useState<AppSettings | null>(null);
+  const [exportDate, setExportDate] = useState<Date>(new Date());
   const [newHabit, setNewHabit] = useState('');
 
   useEffect(() => {
@@ -41,6 +45,19 @@ export default function SettingsPage() {
     await saveSettings(updated);
     setSettings(updated);
     toast.success('已删除');
+  };
+
+  const exportSingleDay = async () => {
+    const dateStr = format(exportDate, 'yyyy-MM-dd');
+    const dayData = await getDayData(dateStr);
+    if (!dayData.timeline.length && !dayData.highlight.text && !dayData.reflection.awareness) {
+      toast.error('该日期没有数据可导出');
+      return;
+    }
+    downloadMarkdown(dayData);
+    toast.success(`已导出 ${dateStr} 的记录`, {
+      description: '图片请手动从应用中保存至 Obsidian 附件目录',
+    });
   };
 
   const exportAll = async () => {
@@ -104,8 +121,33 @@ export default function SettingsPage() {
           Obsidian 导出
         </h2>
         <p className="text-xs text-muted-foreground mb-3">
-          导出所有日记为 Markdown 文件（YYYY-MM-DD.md），图片以 ![[filename]] 格式引用。
+          导出日记为 Markdown 文件（YYYY-MM-DD.md），图片以 ![[filename]] 格式引用。
         </p>
+        
+        {/* Single day export */}
+        <div className="flex gap-2 mb-3">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="flex-1 rounded-xl justify-start gap-2">
+                <Calendar className="w-4 h-4" />
+                {format(exportDate, 'yyyy-MM-dd')}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <CalendarComponent
+                mode="single"
+                selected={exportDate}
+                onSelect={(date) => date && setExportDate(date)}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+          <Button onClick={exportSingleDay} className="rounded-xl gap-2">
+            <Download className="w-4 h-4" />
+            导出
+          </Button>
+        </div>
+        
         <Button onClick={exportAll} variant="outline" className="w-full rounded-xl gap-2">
           <Download className="w-4 h-4" />
           导出全部日记
