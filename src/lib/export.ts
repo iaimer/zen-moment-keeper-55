@@ -3,47 +3,6 @@ import { format } from 'date-fns';
 import { getImage } from '@/lib/db';
 import JSZip from 'jszip';
 
-const MAX_IMAGE_SIZE = 1024 * 1024; // 1MB
-
-function compressImage(blob: Blob): Promise<Blob> {
-  return new Promise((resolve) => {
-    const img = new Image();
-    const url = URL.createObjectURL(blob);
-    img.onload = () => {
-      URL.revokeObjectURL(url);
-      let quality = 0.9;
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d')!;
-      ctx.drawImage(img, 0, 0);
-
-      const tryCompress = (q: number) => {
-        canvas.toBlob(
-          (result) => {
-            if (!result) { resolve(blob); return; }
-            if (result.size <= MAX_IMAGE_SIZE || q <= 0.1) {
-              resolve(result);
-            } else {
-              tryCompress(q - 0.1);
-            }
-          },
-          'image/jpeg',
-          q
-        );
-      };
-
-      // If already small enough, return as-is
-      if (blob.size <= MAX_IMAGE_SIZE) {
-        resolve(blob);
-      } else {
-        tryCompress(quality);
-      }
-    };
-    img.onerror = () => { URL.revokeObjectURL(url); resolve(blob); };
-    img.src = url;
-  });
-}
 export function generateMarkdown(day: DayData): string {
   const lines: string[] = [];
 
@@ -122,8 +81,7 @@ export async function downloadMarkdown(day: DayData) {
   for (const imageId of images) {
     const img = await getImage(imageId);
     if (img) {
-      const compressed = await compressImage(img.blob);
-      zip.file(`assets/${imageId}.jpg`, compressed);
+      zip.file(`assets/${imageId}.jpg`, img.blob);
     }
   }
 
