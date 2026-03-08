@@ -14,8 +14,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['"Noto Sans SC"', 'system-ui', 'sans-serif'],
-        display: ['"Playfair Display"', 'serif'],
+        sans: ['"Noto Sans SC"', '"Quicksand"', 'system-ui', 'sans-serif'],
+        display: ['"Quicksand"', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -53,8 +53,11 @@ export default {
         },
         highlight: {
           start: "hsl(var(--highlight-start))",
+          mid: "hsl(var(--highlight-mid))",
           end: "hsl(var(--highlight-end))",
         },
+        water: "hsl(var(--water))",
+        steps: "hsl(var(--steps))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -86,11 +89,17 @@ export default {
           from: { opacity: "0", transform: "translateY(8px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
+        "bounce-in": {
+          "0%": { transform: "scale(0.9)", opacity: "0" },
+          "50%": { transform: "scale(1.02)" },
+          "100%": { transform: "scale(1)", opacity: "1" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "fade-in": "fade-in 0.3s ease-out",
+        "bounce-in": "bounce-in 0.4s ease-out",
       },
     },
   },

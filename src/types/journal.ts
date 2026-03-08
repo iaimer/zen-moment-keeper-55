@@ -26,12 +26,11 @@ export interface TimelineEntry {
 
 export interface DailyHighlight {
   text: string;
-  imageId?: string;
 }
 
 export interface ReflectionData {
-  awareness: string; // 觉察和反思
-  tomorrow: string;  // 明日寄语
+  awareness: string;
+  tomorrow: string;
 }
 
 export interface DayData {
@@ -40,6 +39,7 @@ export interface DayData {
   highlight: DailyHighlight;
   timeline: TimelineEntry[];
   reflection: ReflectionData;
+  featuredImageId?: string; // User-selected image for calendar
 }
 
 export interface StoredImage {
