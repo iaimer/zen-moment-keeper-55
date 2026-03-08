@@ -55,8 +55,8 @@ export interface AppSettings {
 }
 
 export const DEFAULT_QUANTIFIED_HABITS: Omit<QuantifiedHabit, 'value'>[] = [
-  { id: 'water', label: '饮水量', unit: 'ml', step: 250 },
-  { id: 'steps', label: '走路步数', unit: '步', step: 1000 },
+  { id: 'water', label: '喝水', unit: 'ml', step: 250 },
+  { id: 'steps', label: '运动', unit: '步', step: 1000 },
 ];
 
 export const DEFAULT_CHECKBOX_HABITS: { id: string; label: string }[] = [
